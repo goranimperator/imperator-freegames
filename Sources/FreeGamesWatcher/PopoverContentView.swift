@@ -20,7 +20,7 @@ struct PopoverContentView: View {
 
     private var headerView: some View {
         HStack {
-            if let nsImage = SigilIcon.headerImage() {
+            if let nsImage = SigilIcon.headerImage(size: 14) {
                 Image(nsImage: nsImage)
             }
             Text("Imperator Free Games")
