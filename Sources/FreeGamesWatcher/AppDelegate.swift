@@ -98,7 +98,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             height: 8
         ))
         dot.wantsLayer = true
-        dot.layer?.backgroundColor = NSColor.systemBlue.cgColor
+        dot.layer?.backgroundColor = NSColor(red: 0.85, green: 0.2, blue: 0.2, alpha: 1.0).cgColor
         dot.layer?.cornerRadius = 4
         button.addSubview(dot)
         badgeDot = dot
