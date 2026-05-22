@@ -58,10 +58,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let quitAction = {
             NSApplication.shared.terminate(nil)
         }
-        let refreshAction = { [weak self] in
-            guard let self else { return }
-            Task { @MainActor in
-                await self.gameStore.fetch()
+        let store = gameStore!
+        let refreshAction: () -> Void = {
+            Task {
+                await store.fetch()
             }
         }
 
