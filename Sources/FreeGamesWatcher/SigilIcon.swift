@@ -22,15 +22,15 @@ enum SigilIcon {
           " />
         </g>
       </defs>
-      <g fill="#000">
+      <g fill="#000" stroke="#000" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">
         <use href="#unit" />
         <use href="#unit" transform="rotate(120)" />
         <use href="#unit" transform="rotate(240)" />
-        <path fill-rule="evenodd" d="
-          M 18 0 A 18 18 0 1 0 -18 0 A 18 18 0 1 0 18 0 Z
-          M 9 0 A 9 9 0 1 0 -9 0 A 9 9 0 1 0 9 0 Z
-        " />
       </g>
+      <path fill="#000" fill-rule="evenodd" d="
+        M 22.5 0 A 22.5 22.5 0 1 0 -22.5 0 A 22.5 22.5 0 1 0 22.5 0 Z
+        M 9 0 A 9 9 0 1 0 -9 0 A 9 9 0 1 0 9 0 Z
+      " />
     </svg>
     """
 
