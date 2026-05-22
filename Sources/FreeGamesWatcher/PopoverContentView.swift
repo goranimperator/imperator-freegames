@@ -34,12 +34,10 @@ struct PopoverContentView: View {
                     .foregroundStyle(.tertiary)
             }
 
-            Button(action: refreshAction) {
+            HoverButton(action: refreshAction) {
                 Image(systemName: store.isLoading ? "ellipsis" : "arrow.clockwise")
                     .font(.system(size: 12))
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
             .disabled(store.isLoading)
         }
         .padding(.horizontal, 16)
@@ -87,24 +85,27 @@ struct PopoverContentView: View {
 
             Spacer()
 
-            Button("Open Website") {
+            HoverButton {
                 if let url = URL(string: "https://www.goranimperator.com/free-games") {
                     NSWorkspace.shared.open(url)
                 }
+            } label: {
+                HStack(spacing: 5) {
+                    if let nsImage = SigilIcon.headerImage(size: 11) {
+                        Image(nsImage: nsImage)
+                    }
+                    Text("Open Website")
+                }
+                .font(.caption)
             }
-            .buttonStyle(.plain)
-            .font(.caption)
-            .foregroundStyle(.secondary)
 
             Divider()
                 .frame(height: 12)
 
-            Button("Quit") {
-                quitAction()
+            HoverButton(action: quitAction) {
+                Text("Quit")
+                    .font(.caption)
             }
-            .buttonStyle(.plain)
-            .font(.caption)
-            .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -221,12 +222,16 @@ struct GameRowView: View {
 
 struct LaunchAtLoginToggle: View {
     @State private var isEnabled = SMAppService.mainApp.status == .enabled
+    @State private var isHovered = false
 
     var body: some View {
         Toggle("Open at Login", isOn: $isEnabled)
             .toggleStyle(.checkbox)
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.primary)
+            .opacity(isHovered ? 1.0 : 0.45)
+            .animation(.easeInOut(duration: 0.2), value: isHovered)
+            .onHover { isHovered = $0 }
             .onChange(of: isEnabled) { newValue in
                 do {
                     if newValue {
@@ -238,6 +243,23 @@ struct LaunchAtLoginToggle: View {
                     isEnabled = SMAppService.mainApp.status == .enabled
                 }
             }
+    }
+}
+
+struct HoverButton<Label: View>: View {
+    let action: () -> Void
+    @ViewBuilder let label: () -> Label
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            label()
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.primary)
+        .opacity(isHovered ? 1.0 : 0.45)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .onHover { isHovered = $0 }
     }
 }
 

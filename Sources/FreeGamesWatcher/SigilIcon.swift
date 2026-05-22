@@ -42,11 +42,11 @@ enum SigilIcon {
         return image
     }
 
-    static func headerImage() -> NSImage? {
+    static func headerImage(size: CGFloat = 16) -> NSImage? {
         guard let data = svgString.data(using: .utf8),
               let image = NSImage(data: data) else { return nil }
         image.isTemplate = true
-        image.size = NSSize(width: 16, height: 16)
+        image.size = NSSize(width: size, height: size)
         return image
     }
 }
