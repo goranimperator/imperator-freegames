@@ -19,8 +19,8 @@ struct PopoverContentView: View {
     }
 
     private var headerView: some View {
-        HStack {
-            if let nsImage = SigilIcon.headerImage(size: 14) {
+        HStack(alignment: .center) {
+            if let nsImage = SigilIcon.gamepadImage(size: 16) {
                 Image(nsImage: nsImage)
             }
             Text("Imperator Free Games")
@@ -119,11 +119,8 @@ struct PlatformSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Image(systemName: platform.iconName)
-                    .font(.caption)
-                    .foregroundStyle(platformColor)
                 Text(platform.displayName.uppercased())
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(.body, weight: .semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text("\(games.count)")
@@ -203,7 +200,7 @@ struct GameRowView: View {
                     .lineLimit(2)
             }
         }
-        .padding(8)
+        .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 6)
@@ -226,7 +223,9 @@ struct LaunchAtLoginToggle: View {
 
     var body: some View {
         Toggle("Open at Login", isOn: $isEnabled)
-            .toggleStyle(.checkbox)
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .tint(Color(red: 0xa0/255.0, green: 0x18/255.0, blue: 0x18/255.0))
             .font(.caption)
             .foregroundStyle(.primary)
             .opacity(isHovered ? 1.0 : 0.45)
