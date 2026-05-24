@@ -90,13 +90,8 @@ struct PopoverContentView: View {
                     NSWorkspace.shared.open(url)
                 }
             } label: {
-                HStack(spacing: 5) {
-                    if let nsImage = SigilIcon.headerImage(size: 11) {
-                        Image(nsImage: nsImage)
-                    }
-                    Text("Open Website")
-                }
-                .font(.caption)
+                Text("Open Website")
+                    .font(.caption)
             }
 
             Divider()
