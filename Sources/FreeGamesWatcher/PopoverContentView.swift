@@ -124,12 +124,11 @@ struct PlatformSectionView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text("\(games.count)")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.quaternary.opacity(0.5))
-                    .clipShape(Capsule())
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: 18, height: 18)
+                    .background(Color(red: 0.85, green: 0.2, blue: 0.2))
+                    .clipShape(Circle())
             }
 
             ForEach(games) { game in
