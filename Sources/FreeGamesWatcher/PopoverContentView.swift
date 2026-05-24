@@ -222,15 +222,20 @@ struct LaunchAtLoginToggle: View {
     @State private var isHovered = false
 
     var body: some View {
-        Toggle("Open at Login", isOn: $isEnabled)
-            .toggleStyle(.switch)
-            .controlSize(.mini)
-            .tint(Color(red: 0xa0/255.0, green: 0x18/255.0, blue: 0x18/255.0))
-            .font(.caption)
-            .foregroundStyle(.primary)
-            .opacity(isHovered ? 1.0 : 0.45)
-            .animation(.easeInOut(duration: 0.2), value: isHovered)
-            .onHover { isHovered = $0 }
+        HStack(spacing: 6) {
+            Text("Open at Login")
+                .font(.caption)
+            Toggle("", isOn: $isEnabled)
+                .toggleStyle(.switch)
+                .scaleEffect(0.55)
+                .frame(width: 36, height: 20)
+                .tint(Color(red: 0xa0/255.0, green: 0x18/255.0, blue: 0x18/255.0))
+                .labelsHidden()
+        }
+        .foregroundStyle(.primary)
+        .opacity(isHovered ? 1.0 : 0.45)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .onHover { isHovered = $0 }
             .onChange(of: isEnabled) { newValue in
                 do {
                     if newValue {
