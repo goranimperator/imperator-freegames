@@ -34,11 +34,7 @@ struct PopoverContentView: View {
                     .foregroundStyle(.tertiary)
             }
 
-            HoverButton(action: refreshAction) {
-                Image(systemName: store.isLoading ? "ellipsis" : "arrow.clockwise")
-                    .font(.system(size: 12))
-            }
-            .disabled(store.isLoading)
+            RefreshButton(action: refreshAction, isLoading: store.isLoading)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -258,6 +254,32 @@ struct HoverButton<Label: View>: View {
         .opacity(isHovered ? 1.0 : 0.45)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { isHovered = $0 }
+    }
+}
+
+struct RefreshButton: View {
+    let action: () -> Void
+    let isLoading: Bool
+    @State private var isHovered = false
+    @State private var rotation: Double = 0
+
+    var body: some View {
+        Button {
+            action()
+            withAnimation(.interpolatingSpring(stiffness: 80, damping: 8)) {
+                rotation += 360
+            }
+        } label: {
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: 12))
+                .rotationEffect(.degrees(rotation))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.primary)
+        .opacity(isHovered ? 1.0 : 0.45)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .onHover { isHovered = $0 }
+        .disabled(isLoading)
     }
 }
 
