@@ -266,13 +266,14 @@ struct RefreshButton: View {
     var body: some View {
         Button {
             action()
-            withAnimation(.interpolatingSpring(stiffness: 80, damping: 8)) {
+            withAnimation(.interpolatingSpring(stiffness: 60, damping: 8)) {
                 rotation += 360
             }
         } label: {
-            Image(systemName: "arrow.clockwise")
-                .font(.system(size: 12))
-                .rotationEffect(.degrees(rotation))
+            if let nsImage = SigilIcon.refreshImage(size: 14) {
+                Image(nsImage: nsImage)
+                    .rotationEffect(.degrees(rotation))
+            }
         }
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
