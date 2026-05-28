@@ -128,13 +128,6 @@ struct PlatformSectionView: View {
         }
     }
 
-    private var platformColor: Color {
-        switch platform {
-        case .steam: return .blue
-        case .epic: return .primary
-        case .gog: return .purple
-        }
-    }
 }
 
 struct GameRowView: View {
@@ -226,7 +219,7 @@ struct LaunchAtLoginToggle: View {
         .opacity(isHovered ? 1.0 : 0.45)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { isHovered = $0 }
-            .onChange(of: isEnabled) { newValue in
+        .onChange(of: isEnabled) { newValue in
                 do {
                     if newValue {
                         try SMAppService.mainApp.register()

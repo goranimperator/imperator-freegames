@@ -27,21 +27,6 @@ enum Platform: String, CaseIterable {
         }
     }
 
-    var iconName: String {
-        switch self {
-        case .steam: return "s.circle.fill"
-        case .epic: return "e.circle.fill"
-        case .gog: return "g.circle.fill"
-        }
-    }
-
-    var accentColor: String {
-        switch self {
-        case .steam: return "steam"
-        case .epic: return "epic"
-        case .gog: return "gog"
-        }
-    }
 }
 
 struct PersistedState: Codable {
