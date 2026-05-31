@@ -150,7 +150,7 @@ struct GameRowView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
-                        .background(.blue)
+                        .background(Color(red: 0.85, green: 0.2, blue: 0.2))
                         .clipShape(Capsule())
                 }
 
