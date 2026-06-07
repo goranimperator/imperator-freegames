@@ -93,6 +93,14 @@ struct PopoverContentView: View {
             Divider()
                 .frame(height: 12)
 
+            HoverButton { AboutPanel.show() } label: {
+                Text("About")
+                    .font(.caption)
+            }
+
+            Divider()
+                .frame(height: 12)
+
             HoverButton(action: quitAction) {
                 Text("Quit")
                     .font(.caption)
@@ -118,7 +126,7 @@ struct PlatformSectionView: View {
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(width: 18, height: 18)
-                    .background(Color(red: 0.85, green: 0.2, blue: 0.2))
+                    .background(AppColors.badgeRed)
                     .clipShape(Circle())
             }
 
@@ -150,7 +158,7 @@ struct GameRowView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
-                        .background(Color(red: 0.85, green: 0.2, blue: 0.2))
+                        .background(AppColors.badgeRed)
                         .clipShape(Capsule())
                 }
 
@@ -160,7 +168,7 @@ struct GameRowView: View {
             HStack(spacing: 4) {
                 if let price = game.regularPrice {
                     Text("was \(price)")
-                        .foregroundStyle(Color(red: 0.85, green: 0.2, blue: 0.2))
+                        .foregroundStyle(AppColors.badgeRed)
                 }
                 if let year = game.year {
                     Text("·").foregroundStyle(.quaternary)
@@ -187,7 +195,7 @@ struct GameRowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isHovered ? Color.accentColor.opacity(0.1) : Color.clear)
+                .fill(isHovered ? AppColors.brand.opacity(0.1) : Color.clear)
         )
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
@@ -212,7 +220,7 @@ struct LaunchAtLoginToggle: View {
                 .toggleStyle(.switch)
                 .scaleEffect(0.55)
                 .frame(width: 36, height: 20)
-                .tint(Color(red: 0xa0/255.0, green: 0x18/255.0, blue: 0x18/255.0))
+                .tint(AppColors.brand)
                 .labelsHidden()
         }
         .foregroundStyle(.primary)
@@ -280,11 +288,11 @@ struct RefreshButton: View {
 extension View {
     func cursor(_ cursor: NSCursor) -> some View {
         onHover { inside in
-            if inside {
-                cursor.push()
-            } else {
-                NSCursor.pop()
-            }
+            if inside { cursor.push() } else { NSCursor.pop() }
         }
+    }
+
+    func expandTapTarget() -> some View {
+        contentShape(Rectangle())
     }
 }
