@@ -72,6 +72,6 @@ This app follows the **Imperator Apps BrandBook** (separate repo: `imperator-app
 
 ## Git
 
-- Remote: `git@github.com:goranimperator/imperator-free-games.git` (SSH)
+- Remote: `git@github.com:goranimperator/imperator-freegames.git` (SSH)
 - Commit messages in English; all filenames, comments and file content in English
 - Push to `main` directly (no branches/PRs)

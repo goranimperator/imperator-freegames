@@ -12,7 +12,7 @@
 
 ## Install
 
-Download the latest zip from [Releases](https://github.com/goranimperator/imperator-free-games/releases),
+Download the latest zip from [Releases](https://github.com/goranimperator/imperator-freegames/releases),
 unzip, and move `Imperator FreeGames.app` to `/Applications`.
 
 The app is signed with a self-signed certificate and is not notarized, so
