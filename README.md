@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="Resources/AppIcon.png" width="128" height="128" alt="Imperator Free Games app icon">
+  <img src="Resources/AppIcon.png" width="128" height="128" alt="Imperator FreeGames app icon">
 </p>
 
-<h1 align="center">Imperator Free Games</h1>
+<h1 align="center">Imperator FreeGames</h1>
 
 <p align="center">
   A macOS menu bar watcher for game giveaways. It polls a public feed of games
@@ -13,14 +13,14 @@
 ## Install
 
 Download the latest zip from [Releases](https://github.com/goranimperator/imperator-free-games/releases),
-unzip, and move `Imperator Free Games.app` to `/Applications`.
+unzip, and move `Imperator FreeGames.app` to `/Applications`.
 
 The app is signed with a self-signed certificate and is not notarized, so
 Gatekeeper blocks the first launch. Right-click the app and choose **Open**, or
 clear the quarantine flag:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Imperator Free Games.app"
+xattr -dr com.apple.quarantine "/Applications/Imperator FreeGames.app"
 ```
 
 Requires macOS 13 or later, Apple silicon. Built and tested on macOS 26 only --
@@ -71,7 +71,7 @@ The refresh arrow in the header forces a fetch instead of waiting for the next
 30-minute tick.
 
 State lives in
-`~/Library/Application Support/Imperator Free Games/state.json`: the IDs already
+`~/Library/Application Support/Imperator FreeGames/state.json`: the IDs already
 seen, capped at the 50 most recent per platform. The first fetch after a fresh
 install seeds that list silently, so installing the app does not fire a
 notification for every game already on offer.
@@ -127,15 +127,15 @@ from `git rev-list --count HEAD` and is never edited by hand.
 
 | Path | Role |
 |------|------|
-| `Sources/FreeGamesWatcher/main.swift` | Entry point, `.accessory` activation policy |
-| `Sources/FreeGamesWatcher/AppDelegate.swift` | Status item, popover lifecycle, 30-minute timer, badge dot |
-| `Sources/FreeGamesWatcher/GameStore.swift` | Feed fetch, diff against seen IDs, state persistence |
-| `Sources/FreeGamesWatcher/Models.swift` | Feed and state types |
-| `Sources/FreeGamesWatcher/NotificationManager.swift` | Notification authorization, delivery, click handling |
-| `Sources/FreeGamesWatcher/PopoverContentView.swift` | SwiftUI popover layout and controls |
-| `Sources/FreeGamesWatcher/AboutPanel.swift` | About panel |
-| `Sources/FreeGamesWatcher/AppColors.swift` | Brand colours |
-| `Sources/FreeGamesWatcher/SigilIcon.swift` | Inline SVG icons rendered as template images |
+| `Sources/ImperatorFreeGames/main.swift` | Entry point, `.accessory` activation policy |
+| `Sources/ImperatorFreeGames/AppDelegate.swift` | Status item, popover lifecycle, 30-minute timer, badge dot |
+| `Sources/ImperatorFreeGames/GameStore.swift` | Feed fetch, diff against seen IDs, state persistence |
+| `Sources/ImperatorFreeGames/Models.swift` | Feed and state types |
+| `Sources/ImperatorFreeGames/NotificationManager.swift` | Notification authorization, delivery, click handling |
+| `Sources/ImperatorFreeGames/PopoverContentView.swift` | SwiftUI popover layout and controls |
+| `Sources/ImperatorFreeGames/AboutPanel.swift` | About panel |
+| `Sources/ImperatorFreeGames/AppColors.swift` | Brand colours |
+| `Sources/ImperatorFreeGames/SigilIcon.swift` | Inline SVG icons rendered as template images |
 | `Resources/` | `Info.plist`, app icon, sigil source vector |
 
 A SwiftPM executable with no dependencies. `LSUIElement` is true, so there is no

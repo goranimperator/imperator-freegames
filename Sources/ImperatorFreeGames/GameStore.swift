@@ -16,7 +16,7 @@ final class GameStore: ObservableObject {
 
     init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDir = appSupport.appendingPathComponent("Imperator Free Games")
+        let appDir = appSupport.appendingPathComponent("Imperator FreeGames")
         try? FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
         stateURL = appDir.appendingPathComponent("state.json")
         isInitialFetch = true

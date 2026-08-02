@@ -1,8 +1,8 @@
-APP_NAME    = Imperator Free Games
-BINARY_NAME = FreeGamesWatcher
+APP_NAME    = Imperator FreeGames
+BINARY_NAME = ImperatorFreeGames
 BUNDLE      = build/$(APP_NAME).app
 DIST        = dist
-ZIP         = $(DIST)/Imperator-Free-Games-$(VERSION).zip
+ZIP         = $(DIST)/Imperator-FreeGames-$(VERSION).zip
 BUILD_NUMBER = $(shell git rev-list --count HEAD)
 
 # Self-signed identity, not ad-hoc. The app registers a login item through

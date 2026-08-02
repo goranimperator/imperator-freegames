@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -80 160 160">
   <!--
     Master vector for the Imperator sigil, in the thick variant used by this
-    app. The same path data is inlined in Sources/FreeGamesWatcher/SigilIcon.swift,
+    app. The same path data is inlined in Sources/ImperatorFreeGames/SigilIcon.swift,
     which is what actually renders at runtime; this file is the editable source.
 
     Thick variant: 50% thicker arms and hub ring than the thin original.

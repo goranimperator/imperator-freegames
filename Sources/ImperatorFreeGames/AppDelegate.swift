@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = NSAppearance(named: .darkAqua)
         UserDefaults.standard.set(0, forKey: "AppleAccentColor")
-        ProcessInfo.processInfo.setValue("Imperator Free Games", forKey: "processName")
+        ProcessInfo.processInfo.setValue("Imperator FreeGames", forKey: "processName")
 
         gameStore = GameStore()
 

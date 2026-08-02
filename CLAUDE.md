@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Imperator Free Games — a native macOS menu bar app (Swift/SwiftUI, SPM) that polls `https://www.goranimperator.com/data/free-games.json` every 30 minutes, shows free games in an NSPopover, sends desktop notifications for new games, and displays a red badge dot on the menu bar icon.
+Imperator FreeGames — a native macOS menu bar app (Swift/SwiftUI, SPM) that polls `https://www.goranimperator.com/data/free-games.json` every 30 minutes, shows free games in an NSPopover, sends desktop notifications for new games, and displays a red badge dot on the menu bar icon.
 
 ## Build & Run
 
@@ -50,7 +50,7 @@ AppDelegate (NSStatusItem + NSPopover + Timer)
 ```
 
 **Key design decisions:**
-- `GameStore` persists seen game IDs to `~/Library/Application Support/Imperator Free Games/state.json` with FIFO 50 per platform
+- `GameStore` persists seen game IDs to `~/Library/Application Support/Imperator FreeGames/state.json` with FIFO 50 per platform
 - First fetch after fresh install seeds seenIds without triggering notifications (`isInitialFetch` flag)
 - `newGameIds` accumulates with `formUnion` and clears on `markAsRead()` when popover opens
 - Badge dot is an NSView subview on the status bar button, not a SwiftUI overlay

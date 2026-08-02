@@ -53,7 +53,7 @@ struct AboutView: View {
                     .interpolation(.high)
             }
 
-            Text("Imperator Free Games")
+            Text("Imperator FreeGames")
                 .font(.headline)
 
             Text(version)

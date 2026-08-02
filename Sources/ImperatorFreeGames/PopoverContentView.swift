@@ -23,7 +23,7 @@ struct PopoverContentView: View {
             if let nsImage = SigilIcon.gamepadImage(size: 16) {
                 Image(nsImage: nsImage)
             }
-            Text("Imperator Free Games")
+            Text("Imperator FreeGames")
                 .font(.headline)
 
             Spacer()

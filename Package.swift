@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "FreeGamesWatcher",
+    name: "ImperatorFreeGames",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "FreeGamesWatcher",
-            path: "Sources/FreeGamesWatcher"
+            name: "ImperatorFreeGames",
+            path: "Sources/ImperatorFreeGames"
         )
     ]
 )
