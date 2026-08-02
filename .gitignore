@@ -1,4 +1,8 @@
 .DS_Store
 .build/
+.swiftpm/
+build/
+dist/
 *.app
+*.zip
 .claude/

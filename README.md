@@ -1,93 +1,149 @@
-# Mac Free Games
+<p align="center">
+  <img src="Resources/AppIcon.png" width="128" height="128" alt="Imperator Free Games app icon">
+</p>
 
+<h1 align="center">Imperator Free Games</h1>
 
+<p align="center">
+  A macOS menu bar watcher for game giveaways. It polls a public feed of games
+  that are currently free to keep on Steam, Epic and GOG, notifies you when a
+  new one shows up, and lists them all in a popover.
+</p>
 
-## Getting started
+## Install
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Download the latest zip from [Releases](https://github.com/goranimperator/imperator-free-games/releases),
+unzip, and move `Imperator Free Games.app` to `/Applications`.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+The app is signed with a self-signed certificate and is not notarized, so
+Gatekeeper blocks the first launch. Right-click the app and choose **Open**, or
+clear the quarantine flag:
 
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+```bash
+xattr -dr com.apple.quarantine "/Applications/Imperator Free Games.app"
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/goranimperator/mac-free-games.git
-git branch -M main
-git push -uf origin main
+
+Requires macOS 13 or later, Apple silicon. Built and tested on macOS 26 only --
+older versions are expected to work but have not been verified.
+
+Install at your own risk. The app is not notarized and carries no Apple
+Developer signature, so macOS cannot vouch for it. It is provided as is, with no
+warranty, under the [MIT license](LICENSE).
+
+## Permissions
+
+No Accessibility, Input Monitoring, or Automation grants. The app declares no
+`NSUsage` keys and reads nothing on your machine.
+
+Two system integrations:
+
+| Integration | What it does |
+|-------------|--------------|
+| **Notifications** | On first launch the app asks for notification permission through `UNUserNotificationCenter`. Decline it and everything still works -- you just lose the alerts and keep the badge dot. |
+| **Open at Login** | The footer toggle calls `SMAppService.mainApp.register()`, which adds the app to Login Items in System Settings. Turning it off unregisters it. |
+
+Network access is one outbound HTTPS request every 30 minutes to
+`https://www.goranimperator.com/data/free-games.json`. Nothing is sent -- no
+identifiers, no telemetry, no account. Clicking a game opens its store page in
+your default browser.
+
+## Use
+
+Click the menu bar icon to open the popover. Games are grouped by platform with
+a count per section; each row shows the title, the regular price it was before
+the giveaway, release year, developer and a short description. Click a row to
+open the store page.
+
+A red dot on the menu bar icon means something new arrived since you last
+looked. Opening the popover clears it, and the new titles keep a red **NEW**
+pill until then.
+
+The footer holds the controls:
+
+| Control | What it does |
+|---------|--------------|
+| Open at Login | Register or unregister the login item |
+| Open Website | Open the full free-games page in a browser |
+| About | Version, build and copyright panel |
+| Quit | Terminate the app |
+
+The refresh arrow in the header forces a fetch instead of waiting for the next
+30-minute tick.
+
+State lives in
+`~/Library/Application Support/Imperator Free Games/state.json`: the IDs already
+seen, capped at the 50 most recent per platform. The first fetch after a fresh
+install seeds that list silently, so installing the app does not fire a
+notification for every game already on offer.
+
+## Build from source
+
+```bash
+make install
 ```
 
-## Integrate with your tools
+Builds release, bundles, codesigns, installs to `/Applications`, and launches.
+Other targets:
 
-* [Set up project integrations](https://gitlab.com/goranimperator/mac-free-games/-/settings/integrations)
+```bash
+make run
+```
 
-## Collaborate with your team
+```bash
+make clean
+```
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+Signing uses the self-signed `Imperator Dev` identity by default. Override it:
 
-## Test and Deploy
+```bash
+make build CODESIGN_IDENTITY=-
+```
 
-Use the built-in continuous integration in GitLab.
+Ad-hoc signing (`-`) mints a new code hash on every build, which drops the
+login-item registration on update. Fine for local iteration, wrong for a
+release.
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+## Release
 
-***
+Build a zip without touching git or the remote:
 
-# Editing this README
+```bash
+make dist VERSION=1.0.0
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Cut a full release -- bumps `Info.plist`, commits, tags `v1.0.0`, pushes, and
+publishes a GitHub release with the zip attached:
 
-## Suggestions for a good README
+```bash
+make release VERSION=1.0.0
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Requires the [GitHub CLI](https://cli.github.com) (`brew install gh`, then
+`gh auth login`). The working tree must be clean. Tags are plain semver
+(`v1.0.0`); the release title carries the app name. `CFBundleVersion` is set
+from `git rev-list --count HEAD` and is never edited by hand.
 
-## Name
-Choose a self-explaining name for your project.
+## Layout
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+| Path | Role |
+|------|------|
+| `Sources/FreeGamesWatcher/main.swift` | Entry point, `.accessory` activation policy |
+| `Sources/FreeGamesWatcher/AppDelegate.swift` | Status item, popover lifecycle, 30-minute timer, badge dot |
+| `Sources/FreeGamesWatcher/GameStore.swift` | Feed fetch, diff against seen IDs, state persistence |
+| `Sources/FreeGamesWatcher/Models.swift` | Feed and state types |
+| `Sources/FreeGamesWatcher/NotificationManager.swift` | Notification authorization, delivery, click handling |
+| `Sources/FreeGamesWatcher/PopoverContentView.swift` | SwiftUI popover layout and controls |
+| `Sources/FreeGamesWatcher/AboutPanel.swift` | About panel |
+| `Sources/FreeGamesWatcher/AppColors.swift` | Brand colours |
+| `Sources/FreeGamesWatcher/SigilIcon.swift` | Inline SVG icons rendered as template images |
+| `Resources/` | `Info.plist`, app icon, sigil source vector |
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+A SwiftPM executable with no dependencies. `LSUIElement` is true, so there is no
+Dock icon and no menu -- the status item is the entire interface. Because
+SwiftPM does not compile asset catalogs, the popover and menu bar icons are
+inline SVG strings decoded through `NSImage(data:)` with `isTemplate = true`, so
+they follow the system appearance.
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[MIT](LICENSE) &copy; Goran Imperator

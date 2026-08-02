@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -80 160 160">
   <!--
-    sigil-tight-thick: same viewBox och geometri som sigil-tight.svg
-    men 50% tjockare armar/klingor + 50% tjockare hub-ring.
-    Hålet i mitten (r=9) är OFÖRÄNDRAT.
+    Master vector for the Imperator sigil, in the thick variant used by this
+    app. The same path data is inlined in Sources/FreeGamesWatcher/SigilIcon.swift,
+    which is what actually renders at runtime; this file is the editable source.
 
-    Förändringar:
-      - Hub outer radius: 18 → 22.5 (ring 9 → 13.5 tjockare)
-      - Stem/klingor: stroke="#000" stroke-width=4.5 (+2.25 på varje sida)
-      - Stem-bredd: 9 → 13.5 vid mätning
+    Thick variant: 50% thicker arms and hub ring than the thin original.
+    The centre hole (r=9) is unchanged.
+      - Hub outer radius: 18 -> 22.5
+      - Arms: stroke="#000" stroke-width=4.5 (+2.25 per side)
+      - Arm width: 9 -> 13.5 when measured
   -->
   <defs>
     <g id="unit">

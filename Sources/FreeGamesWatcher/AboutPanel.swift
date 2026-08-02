@@ -35,6 +35,17 @@ final class AboutPanel {
 struct AboutView: View {
     @State private var isLinkHovered = false
 
+    private var version: String {
+        let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+        return "Version \(v) (Build \(b))"
+    }
+
+    private var copyright: String {
+        let year = Calendar.current.component(.year, from: Date())
+        return "© 1986-\(year) Goran Imperator"
+    }
+
     var body: some View {
         VStack(spacing: 12) {
             if let nsImage = SigilIcon.headerImage(size: 64) {
@@ -45,11 +56,11 @@ struct AboutView: View {
             Text("Imperator Free Games")
                 .font(.headline)
 
-            Text("Version 1.0.0 (Build 1)")
+            Text(version)
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text("© 2024-2026 Goran Imperator")
+            Text(copyright)
                 .font(.caption)
                 .foregroundStyle(.tertiary)
 
