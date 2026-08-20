@@ -37,6 +37,16 @@ make release VERSION=1.0.0
 
 Tags are plain semver (`v1.0.0`). `CFBundleShortVersionString` is set by `make release`, never by hand; `CFBundleVersion` comes from `git rev-list --count HEAD`. The About panel reads both keys out of the bundle, so it must never hardcode a version. Requires `gh` and a clean working tree.
 
+**Re-read the whole README before every release, not after.** This is a gate, not a nice-to-have — v1.0.0 needed three corrective passes on an already-published tag, and each one meant deleting the release and re-cutting it. Check at minimum:
+
+- `Resources/AppIcon.png`, the README header, still matches `Resources/AppIcon.icns`. Nothing in the build touches it, so a new icon leaves it stale. Regenerate in the same commit: `iconutil -c iconset Resources/AppIcon.icns -o /tmp/ic.iconset && cp /tmp/ic.iconset/icon_256x256.png Resources/AppIcon.png`. It renders at 256 physical pixels, so do not downscale to 128.
+- No stale app name, binary name, or repo slug anywhere: `git ls-files | grep -v AppIcon | xargs grep -ln "<old name>"`.
+- The Layout table lists every file in `Sources/ImperatorFreeGames/`.
+- The requirements block matches `platforms:` in `Package.swift` (macOS 13) and the arch the binary actually is (arm64).
+- Command blocks match the current Makefile targets.
+
+Verify the header against what GitHub serves, not the local file: `curl -sSL https://raw.githubusercontent.com/goranimperator/imperator-freegames/main/Resources/AppIcon.png`.
+
 ## Architecture
 
 **Entry point:** `main.swift` — creates NSApplication with `.accessory` policy (no dock icon), instantiates AppDelegate via `MainActor.assumeIsolated`.
