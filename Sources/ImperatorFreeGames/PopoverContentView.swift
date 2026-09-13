@@ -76,7 +76,7 @@ struct PopoverContentView: View {
     }
 
     private var footerView: some View {
-        HStack {
+        HStack(spacing: 14) {
             LaunchAtLoginToggle()
 
             Spacer()
@@ -90,16 +90,10 @@ struct PopoverContentView: View {
                     .font(.caption)
             }
 
-            Divider()
-                .frame(height: 12)
-
             HoverButton { AboutPanel.show() } label: {
                 Text("About")
                     .font(.caption)
             }
-
-            Divider()
-                .frame(height: 12)
 
             HoverButton(action: quitAction) {
                 Text("Quit")
