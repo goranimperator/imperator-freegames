@@ -23,7 +23,7 @@ clear the quarantine flag:
 xattr -dr com.apple.quarantine "/Applications/Imperator FreeGames.app"
 ```
 
-Requires macOS 13 or later, Apple silicon. Built and tested on macOS 26 only --
+Requires macOS 13 or later, Apple silicon. Built and tested on macOS 27 only --
 older versions are expected to work but have not been verified.
 
 Install at your own risk. The app is not notarized and carries no Apple
@@ -102,6 +102,36 @@ make build CODESIGN_IDENTITY=-
 Ad-hoc signing (`-`) mints a new code hash on every build, which drops the
 login-item registration on update. Fine for local iteration, wrong for a
 release.
+
+Building needs Swift 6.4 or later, because `Package.swift` declares
+`swift-tools-version:6.4`. That is a build requirement only; the app itself
+still runs on macOS 13.
+
+### Why the build passes a linker flag
+
+AppKit decides which generation of a control to draw from the `sdk` field in the
+binary's `LC_BUILD_VERSION`, and SwiftPM fills that field from `platforms:`
+rather than from the SDK it compiled against. Left alone, a package pinned to
+macOS 13 would ship macOS 13 era controls on every system, so the Open at Login
+switch would be a narrow track with a round knob instead of the wide capsule
+with an oval knob that macOS 27 draws.
+
+Raising `platforms:` would fix the drawing and lock out every Mac below macOS
+27, so the Makefile stamps the SDK through the linker instead and leaves the
+minimum alone:
+
+```bash
+swift build -c release -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.0
+```
+
+Check the result on any build:
+
+```bash
+otool -l "build/Imperator FreeGames.app/Contents/MacOS/ImperatorFreeGames" | awk '/LC_BUILD_VERSION/,/^$/' | grep -E "minos|sdk"
+```
+
+It has to print `minos 13.0` and `sdk 27.0`. If `sdk` matches `minos`, the app
+is drawing the old controls.
 
 ## Release
 

@@ -12,12 +12,25 @@ BUILD_NUMBER = $(shell git rev-list --count HEAD)
 # Imperator Dev cert keeps the requirement stable across releases.
 CODESIGN_IDENTITY ?= Imperator Dev
 
+# AppKit picks which generation of a control to draw from the `sdk` field in the
+# binary's LC_BUILD_VERSION. SwiftPM stamps that field from `platforms:` in
+# Package.swift, not from the SDK it compiled against, so a manifest pinned to
+# macOS 13 ships macOS 13 era controls on any system: a narrow switch with a
+# round knob instead of the wide capsule with an oval knob that macOS 27 draws.
+#
+# This app stays installable on macOS 13, so `platforms:` cannot be raised.
+# Stamp the real SDK through the linker instead: minimum stays MIN_MACOS, the
+# sdk field becomes whatever the installed SDK is.
+MIN_MACOS   = 13.0
+SDK_VERSION = $(shell xcrun --sdk macosx --show-sdk-version)
+PLATFORM_STAMP = -Xlinker -platform_version -Xlinker macos -Xlinker $(MIN_MACOS) -Xlinker $(SDK_VERSION)
+
 .PHONY: all build clean run install dist release check-version
 
 all: build
 
 build:
-	swift build -c release
+	swift build -c release $(PLATFORM_STAMP)
 	@rm -rf "$(BUNDLE)"
 	@mkdir -p "$(BUNDLE)/Contents/MacOS" "$(BUNDLE)/Contents/Resources"
 	cp ".build/release/$(BINARY_NAME)" "$(BUNDLE)/Contents/MacOS/$(BINARY_NAME)"

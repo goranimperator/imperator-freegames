@@ -23,6 +23,14 @@ make clean
 
 Signing uses the self-signed `Imperator Dev` identity (`CODESIGN_IDENTITY ?= Imperator Dev`). Do not switch to ad-hoc for anything that ships: the app registers a login item through `SMAppService`, and ad-hoc mints a new cdhash on every build, which drops that registration on update.
 
+**Never call `swift build` directly for anything you intend to look at or ship.** The Makefile passes `$(PLATFORM_STAMP)`, and without it the binary is stamped `sdk 13.0` and AppKit draws macOS 13 era controls: the Open at Login switch comes out as a narrow track with a round knob instead of the wide capsule with an oval knob. `platforms:` stays at `.v13` because the public release supports macOS 13, so the SDK stamp has to come from the linker:
+
+```bash
+otool -l "build/Imperator FreeGames.app/Contents/MacOS/ImperatorFreeGames" | awk '/LC_BUILD_VERSION/,/^$/' | grep -E "minos|sdk"
+```
+
+Expect `minos 13.0` and `sdk 27.0`. The manifest is `swift-tools-version:6.4` with `swiftSettings: [.swiftLanguageMode(.v5)]`, so Swift 6 language mode is off; migrating it is a separate job.
+
 There are no tests. No linter. No CI. The verification loop is: build → run → visually confirm in the popover.
 
 ## Release
@@ -75,7 +83,8 @@ This app follows the **Imperator Apps BrandBook** (separate repo: `imperator-app
 - **Forced dark mode** — `NSApp.appearance = NSAppearance(named: .darkAqua)` at launch
 - **Accent color override** — `UserDefaults.standard.set(0, forKey: "AppleAccentColor")` at launch
 - **HoverButton** pattern — opacity 0.45→1.0, `.easeInOut(duration: 0.2)`
-- **Toggle spec** — `.switch` style, `.scaleEffect(0.55)`, `.frame(width: 36, height: 20)`, `.tint(AppColors.brand)`
+- **Toggle spec** — `.switch` style, `.scaleEffect(0.55)`, `.tint(AppColors.brand)`, `.labelsHidden()`. No `.frame`: the switch is 54x24pt on macOS 27, so 0.55 gives 29.7x13.2 and a frame only adds invisible padding
+- **No cursor on a toggle** — switches keep the default system arrow, same as System Settings. Never `.cursor(.pointingHand)` on a `Toggle`, its label, or the `HStack` pairing them
 - **Popover** — 340pt wide, `.transient`, `.black.opacity(0.15)` background
 - **No blue anywhere** — all accent colors are brand red (#A01818) or badge red (#D93333)
 - **About panel copyright** — `© 1986-\(currentYear)`, computed from `Calendar`, never a hardcoded end year

@@ -64,7 +64,7 @@ struct PopoverContentView: View {
         VStack(spacing: 8) {
             Image(systemName: "gamecontroller")
                 .font(.system(size: 32))
-                .foregroundStyle(.quaternary)
+                .foregroundStyle(.tertiary)
             Text("No free games right now")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -215,7 +215,6 @@ struct LaunchAtLoginToggle: View {
             Toggle("", isOn: $isEnabled)
                 .toggleStyle(.switch)
                 .scaleEffect(0.55)
-                .frame(width: 36, height: 20)
                 .tint(AppColors.brand)
                 .labelsHidden()
         }
@@ -223,17 +222,19 @@ struct LaunchAtLoginToggle: View {
         .opacity(isHovered ? 1.0 : 0.45)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { isHovered = $0 }
+        // Single-argument onChange: the two-argument form the brandbook shows is
+        // macOS 14 only, and this app still deploys to 13.
         .onChange(of: isEnabled) { newValue in
-                do {
-                    if newValue {
-                        try SMAppService.mainApp.register()
-                    } else {
-                        try SMAppService.mainApp.unregister()
-                    }
-                } catch {
-                    isEnabled = SMAppService.mainApp.status == .enabled
+            do {
+                if newValue {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
                 }
+            } catch {
+                isEnabled = SMAppService.mainApp.status == .enabled
             }
+        }
     }
 }
 
@@ -281,10 +282,33 @@ struct RefreshButton: View {
     }
 }
 
+// NSCursor is a stack, so an unmatched push leaves the pushed cursor on screen
+// for the whole app. SwiftUI drops the exiting onHover when the view goes away
+// under the pointer, which happens here every time the popover closes over a
+// hovered row: the pointing hand then survives on top of the footer toggle,
+// which is supposed to keep the system arrow. Track our own push and unwind it
+// on disappear so the stack always balances.
+private struct CursorOnHover: ViewModifier {
+    let cursor: NSCursor
+    @State private var pushed = false
+
+    func body(content: Content) -> some View {
+        content
+            .onHover { inside in
+                guard inside != pushed else { return }
+                pushed = inside
+                if inside { cursor.push() } else { NSCursor.pop() }
+            }
+            .onDisappear {
+                guard pushed else { return }
+                pushed = false
+                NSCursor.pop()
+            }
+    }
+}
+
 extension View {
     func cursor(_ cursor: NSCursor) -> some View {
-        onHover { inside in
-            if inside { cursor.push() } else { NSCursor.pop() }
-        }
+        modifier(CursorOnHover(cursor: cursor))
     }
 }
