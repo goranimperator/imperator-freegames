@@ -16,6 +16,11 @@ struct PopoverContentView: View {
         }
         .frame(width: 340)
         .background(.black.opacity(0.15))
+        // Brandbook section 13: window-shaped surfaces are 18pt with a continuous
+        // curve on macOS 27. AppKit draws the popover's rounded frame but does not
+        // clip the content view to it, so this background paints square corners on
+        // top of that frame unless the content is clipped to the same shape.
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private var headerView: some View {
