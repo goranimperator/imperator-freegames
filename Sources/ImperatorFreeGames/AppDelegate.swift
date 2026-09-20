@@ -6,12 +6,11 @@ import ServiceManagement
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
+    private var panel: MenuBarPanel!
     private var gameStore: GameStore!
     private var timer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var badgeDot: NSView?
-    private var eventMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = NSAppearance(named: .darkAqua)
@@ -21,7 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         gameStore = GameStore()
 
         setupStatusItem()
-        setupPopover()
+        setupPanel()
         observeUnread()
 
         NotificationManager.shared.requestAuthorization()
@@ -36,10 +35,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 await self.gameStore.fetch()
             }
         }
-
-        eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            self?.closePopover()
-        }
     }
 
     private func setupStatusItem() {
@@ -51,12 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.target = self
     }
 
-    private func setupPopover() {
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 340, height: 460)
-        popover.behavior = .transient
-        popover.animates = true
-
+    private func setupPanel() {
         let quitAction = {
             NSApplication.shared.terminate(nil)
         }
@@ -67,10 +57,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        popover.contentViewController = NSHostingController(
-            rootView: PopoverContentView(quitAction: quitAction, refreshAction: refreshAction)
-                .environmentObject(gameStore)
+        // A MenuBarPanel rather than an NSPopover. macOS 27 draws its own menu
+        // bar panels as plain rounded rectangles with a 17.5 pt corner, no
+        // arrow and no animation, and an NSPopover draws none of that: 26.25 pt
+        // with an arrow from a current binary, 9.5 from an old-stamped one, and
+        // it exposes neither for adjustment. See MenuBarPanel for the
+        // measurements, taken off Control Centre's Wi-Fi panel.
+        panel = MenuBarPanel(
+            content: PopoverContentView(quitAction: quitAction, refreshAction: refreshAction)
+                .environmentObject(gameStore),
+            width: 340
         )
+        // NSPopover highlights the status item it is anchored to for as long as
+        // it is attached, which is where the rounded backing behind the icon
+        // comes from. A panel gets none of that, so the pressed state is driven
+        // by hand here, and dropped whenever the panel closes itself: on a click
+        // outside, on Escape, or on the status item's own second click.
+        panel.onClose = { [weak self] in
+            self?.statusItem.button?.isHighlighted = false
+        }
     }
 
     private func observeUnread() {
@@ -102,22 +107,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func togglePopover() {
-        if popover.isShown {
-            closePopover()
+        if panel.isShown {
+            panel.close()
         } else {
-            showPopover()
+            showPanel()
         }
     }
 
-    private func showPopover() {
+    private func showPanel() {
         guard let button = statusItem.button else { return }
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        panel.show(from: button)
+        button.isHighlighted = true
         gameStore.markAsRead()
         NSApp.activate(ignoringOtherApps: true)
-    }
-
-    private func closePopover() {
-        guard popover.isShown else { return }
-        popover.performClose(nil)
     }
 }

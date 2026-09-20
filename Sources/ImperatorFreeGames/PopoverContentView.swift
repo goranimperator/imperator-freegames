@@ -15,12 +15,11 @@ struct PopoverContentView: View {
             footerView
         }
         .frame(width: 340)
-        .background(.black.opacity(0.15))
-        // Brandbook section 13: window-shaped surfaces are 18pt with a continuous
-        // curve on macOS 27. AppKit draws the popover's rounded frame but does not
-        // clip the content view to it, so this background paints square corners on
-        // top of that frame unless the content is clipped to the same shape.
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        // The surface itself is MenuBarPanel's NSVisualEffectView on the system
+        // `.popover` material, which is what makes this read like every other
+        // menu bar popup. Brandbook 6.1's tint goes over it, and nothing here
+        // sets a corner radius: the panel masks its own silhouette.
+        .background(Color.black.opacity(0.15))
     }
 
     private var headerView: some View {
@@ -61,6 +60,14 @@ struct PopoverContentView: View {
                 }
                 .padding(16)
             }
+            // Two things at once. An NSScrollView draws its own opaque
+            // background, which would paint a flat slab over the panel's
+            // material, so hide it. Hiding it then punches through the root
+            // background as well, and the list samples the raw material at
+            // rgb(95) while the header and footer sit at rgb(81), so the
+            // brandbook tint has to be restated here rather than inherited.
+            .scrollContentBackground(.hidden)
+            .background(Color.black.opacity(0.15))
             .frame(maxHeight: 380)
         }
     }
@@ -91,7 +98,7 @@ struct PopoverContentView: View {
                     NSWorkspace.shared.open(url)
                 }
             } label: {
-                Text("Open Website")
+                Text("Website")
                     .font(.caption)
             }
 

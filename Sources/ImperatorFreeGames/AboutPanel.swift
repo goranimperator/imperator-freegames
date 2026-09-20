@@ -7,6 +7,7 @@ final class AboutPanel {
 
     static func show() {
         if let existing = panel, existing.isVisible {
+            NSApp.activate(ignoringOtherApps: true)
             existing.makeKeyAndOrderFront(nil)
             return
         }
@@ -21,12 +22,39 @@ final class AboutPanel {
         panel.titleVisibility = .hidden
         panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
-        panel.center()
+        // An NSPanel hides itself when its app deactivates, and this app is an
+        // .accessory that goes inactive the moment anything else is clicked.
+        // Left at the default the panel vanishes behind the first click outside
+        // it and the user has to reopen it from a popover they also just closed.
+        panel.hidesOnDeactivate = false
+        // The app forces dark mode on NSApp, but a panel created later does not
+        // inherit that, so state it here too.
+        panel.appearance = NSAppearance(named: .darkAqua)
 
         panel.contentViewController = NSHostingController(
             rootView: AboutView()
         )
 
+        // Setting contentViewController resizes the window to the hosted view's
+        // fitting size, and a SwiftUI view that has not laid out yet reports
+        // zero, so the contentRect above is thrown away. Force the layout and
+        // state the size, or center() below runs against a 0x0 frame and parks
+        // the panel's left edge on the screen's centre line instead of its
+        // middle. Measured before this: a 300x292 panel landed at x=840 on a
+        // 1680pt screen, where centred is x=690.
+        if let hosted = panel.contentViewController?.view {
+            hosted.layoutSubtreeIfNeeded()
+            panel.setContentSize(NSSize(width: 300, height: max(260, hosted.fittingSize.height)))
+        } else {
+            panel.setContentSize(NSSize(width: 300, height: 260))
+        }
+
+        // After the size is settled, never before.
+        panel.center()
+
+        // Ordering front is not enough from an .accessory app: without the
+        // activation the panel comes up behind whatever the user was in.
+        NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         self.panel = panel
     }

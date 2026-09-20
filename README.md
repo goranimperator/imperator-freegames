@@ -7,7 +7,7 @@
 <p align="center">
   A macOS menu bar watcher for game giveaways. It polls a public feed of games
   that are currently free to keep on Steam, Epic and GOG, notifies you when a
-  new one shows up, and lists them all in a popover.
+  new one shows up, and lists them all in a menu bar panel.
 </p>
 
 ## Install
@@ -49,13 +49,13 @@ your default browser.
 
 ## Use
 
-Click the menu bar icon to open the popover. Games are grouped by platform with
+Click the menu bar icon to open the panel. Games are grouped by platform with
 a count per section; each row shows the title, the regular price it was before
 the giveaway, release year, developer and a short description. Click a row to
 open the store page.
 
 A red dot on the menu bar icon means something new arrived since you last
-looked. Opening the popover clears it, and the new titles keep a red **NEW**
+looked. Opening the panel clears it, and the new titles keep a red **NEW**
 pill until then.
 
 The footer holds the controls:
@@ -63,7 +63,7 @@ The footer holds the controls:
 | Control | What it does |
 |---------|--------------|
 | Open at Login | Register or unregister the login item |
-| Open Website | Open the full free-games page in a browser |
+| Website | Open the full free-games page in a browser |
 | About | Version, build and copyright panel |
 | Quit | Terminate the app |
 
@@ -158,11 +158,12 @@ from `git rev-list --count HEAD` and is never edited by hand.
 | Path | Role |
 |------|------|
 | `Sources/ImperatorFreeGames/main.swift` | Entry point, `.accessory` activation policy |
-| `Sources/ImperatorFreeGames/AppDelegate.swift` | Status item, popover lifecycle, 30-minute timer, badge dot |
+| `Sources/ImperatorFreeGames/AppDelegate.swift` | Status item, panel lifecycle, 30-minute timer, badge dot |
 | `Sources/ImperatorFreeGames/GameStore.swift` | Feed fetch, diff against seen IDs, state persistence |
 | `Sources/ImperatorFreeGames/Models.swift` | Feed and state types |
 | `Sources/ImperatorFreeGames/NotificationManager.swift` | Notification authorization, delivery, click handling |
-| `Sources/ImperatorFreeGames/PopoverContentView.swift` | SwiftUI popover layout and controls |
+| `Sources/ImperatorFreeGames/PopoverContentView.swift` | SwiftUI panel layout and controls |
+| `Sources/ImperatorFreeGames/MenuBarPanel.swift` | The panel surface: system popover material, 17.5pt corner, click and Escape dismissal |
 | `Sources/ImperatorFreeGames/AboutPanel.swift` | About panel |
 | `Sources/ImperatorFreeGames/AppColors.swift` | Brand colours |
 | `Sources/ImperatorFreeGames/SigilIcon.swift` | Inline SVG icons rendered as template images |
@@ -170,9 +171,32 @@ from `git rev-list --count HEAD` and is never edited by hand.
 
 A SwiftPM executable with no dependencies. `LSUIElement` is true, so there is no
 Dock icon and no menu -- the status item is the entire interface. Because
-SwiftPM does not compile asset catalogs, the popover and menu bar icons are
+SwiftPM does not compile asset catalogs, the panel and menu bar icons are
 inline SVG strings decoded through `NSImage(data:)` with `isTemplate = true`, so
 they follow the system appearance.
+
+The menu bar panel is drawn by the app, in `MenuBarPanel.swift`, rather than by
+`NSPopover`. `NSPopover` gives no way to set its radius, and neither radius it
+draws is the one macOS uses in the menu bar: a binary stamped `sdk 27.0` gets a
+26.25pt squircle and one stamped `sdk 14.0` gets a 9.5pt circular corner.
+
+The target is the system's own menu bar panel. Control Centre's Wi-Fi panel,
+captured with `screencapture -o -l` and fitted on its bottom corner, measures
+17.50pt at 309 x 290 drawn points, rms 0.38, and fits a circle rather than a
+squircle. A plain titled window measures 17.25pt by the same method, so a menu
+bar panel carries a window corner, not a popover one.
+
+`MenuBarPanel` is therefore a borderless `NSPanel` holding an
+`NSVisualEffectView` on the `.popover` material, with a circular layer corner.
+The constant is `18.25`, not `17.5`, because `NSVisualEffectView` blends its
+edge and draws about 0.75pt tighter than the radius it is given: at 17.5 this
+app's panel measured 16.75, at 18.25 it measures 17.50, which is the Wi-Fi panel
+exactly.
+
+There is no arrow and no open or close animation, because macOS 27 gives its own
+menu bar panels neither. The panel owns its own dismissal, a global click
+monitor plus an Escape key monitor, which is what `NSPopover`'s `.transient`
+behaviour used to provide.
 
 ## License
 
