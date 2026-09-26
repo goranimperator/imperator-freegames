@@ -210,7 +210,6 @@ struct GameRowView: View {
                 NSWorkspace.shared.open(url)
             }
         }
-        .cursor(.pointingHand)
     }
 }
 
@@ -291,36 +290,5 @@ struct RefreshButton: View {
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { isHovered = $0 }
         .disabled(isLoading)
-    }
-}
-
-// NSCursor is a stack, so an unmatched push leaves the pushed cursor on screen
-// for the whole app. SwiftUI drops the exiting onHover when the view goes away
-// under the pointer, which happens here every time the popover closes over a
-// hovered row: the pointing hand then survives on top of the footer toggle,
-// which is supposed to keep the system arrow. Track our own push and unwind it
-// on disappear so the stack always balances.
-private struct CursorOnHover: ViewModifier {
-    let cursor: NSCursor
-    @State private var pushed = false
-
-    func body(content: Content) -> some View {
-        content
-            .onHover { inside in
-                guard inside != pushed else { return }
-                pushed = inside
-                if inside { cursor.push() } else { NSCursor.pop() }
-            }
-            .onDisappear {
-                guard pushed else { return }
-                pushed = false
-                NSCursor.pop()
-            }
-    }
-}
-
-extension View {
-    func cursor(_ cursor: NSCursor) -> some View {
-        modifier(CursorOnHover(cursor: cursor))
     }
 }

@@ -90,7 +90,7 @@ This app follows the **Imperator Apps BrandBook** (separate repo: `imperator-app
 - **Accent color override** — `UserDefaults.standard.set(0, forKey: "AppleAccentColor")` at launch
 - **HoverButton** pattern — opacity 0.45→1.0, `.easeInOut(duration: 0.2)`
 - **Toggle spec** — `.switch` style, `.scaleEffect(0.55)`, `.tint(AppColors.brand)`, `.labelsHidden()`. No `.frame`: the switch is 54x24pt on macOS 27, so 0.55 gives 29.7x13.2 and a frame only adds invisible padding
-- **No cursor on a toggle** — switches keep the default system arrow, same as System Settings. Never `.cursor(.pointingHand)` on a `Toggle`, its label, or the `HStack` pairing them
+- **No custom hover cursor anywhere** — every element keeps the macOS default arrow, the same as System Settings. Never push `NSCursor.pointingHand` and never add a `.cursor()` helper back
 - **Panel** — 340pt wide, `.black.opacity(0.15)` tint over the `.popover` material
 - **No blue anywhere** — all accent colors are brand red (#A01818) or badge red (#D93333)
 - **About panel copyright** — `© 1986-\(currentYear)`, computed from `Calendar`, never a hardcoded end year

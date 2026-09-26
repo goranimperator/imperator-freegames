@@ -97,7 +97,6 @@ struct AboutView: View {
                 .foregroundStyle(AppColors.brand)
                 .underline(isLinkHovered)
                 .onHover { isLinkHovered = $0 }
-                .cursor(.pointingHand)
                 .onTapGesture {
                     if let url = URL(string: "https://www.goranimperator.com") {
                         NSWorkspace.shared.open(url)
