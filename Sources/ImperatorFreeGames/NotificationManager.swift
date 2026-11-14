@@ -58,7 +58,14 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     ) {
         if let urlString = response.notification.request.content.userInfo["url"] as? String,
            let url = URL(string: urlString) {
-            NSWorkspace.shared.open(url)
+            // An update notification carries a URL that came from a network
+            // response, so it goes through UpdateChecker's GitHub-only guard.
+            // Game notifications open their store pages as before.
+            if response.notification.request.identifier.hasPrefix(UpdateChecker.notificationPrefix) {
+                UpdateChecker.open(url)
+            } else {
+                NSWorkspace.shared.open(url)
+            }
         }
         completionHandler()
     }

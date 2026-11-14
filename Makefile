@@ -82,6 +82,6 @@ release: check-version
 	git push origin v$(VERSION)
 	gh release create v$(VERSION) \
 		--title "$(APP_NAME) $(VERSION)" \
-		--notes "Menu bar watcher for free game giveaways on Steam, Epic and GOG. Polls a public JSON feed every 30 minutes, notifies on new titles and lists them in a popover. Signed with a self-signed certificate and not notarized, so Gatekeeper blocks the first launch: right-click the app and choose Open, or run \`xattr -dr com.apple.quarantine \"/Applications/$(APP_NAME).app\"\`." \
+		--notes "Menu bar watcher for free game giveaways on Steam, Epic and GOG. Polls a public JSON feed every 30 minutes, notifies on new titles and lists them in a menu bar panel. Once a day it checks GitHub for a newer release and says so in the panel and in one notification; updating is still by hand. Signed with a self-signed certificate and not notarized, so Gatekeeper blocks the first launch and every update: choose Done, then run \`xattr -dr com.apple.quarantine \"/Applications/$(APP_NAME).app\"\`." \
 		"$(ZIP)#$(APP_NAME) $(VERSION) (macOS)"
 	@echo "Released v$(VERSION)"

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Imperator FreeGames — a native macOS menu bar app (Swift/SwiftUI, SPM) that polls `https://www.goranimperator.com/data/free-games.json` every 30 minutes, shows free games in a menu bar panel, sends desktop notifications for new games, and displays a red badge dot on the menu bar icon.
+Imperator FreeGames: a native macOS menu bar app (Swift/SwiftUI, SPM) that polls `https://www.goranimperator.com/data/free-games.json` every 30 minutes, shows free games in a menu bar panel, sends desktop notifications for new games, and displays a red badge dot on the menu bar icon. Once a day it also checks GitHub for a newer release of itself.
 
 ## Build & Run
 
@@ -29,14 +29,14 @@ Signing uses the self-signed `Imperator Dev` identity (`CODESIGN_IDENTITY ?= Imp
 otool -l "build/Imperator FreeGames.app/Contents/MacOS/ImperatorFreeGames" | awk '/LC_BUILD_VERSION/,/^$/' | grep -E "minos|sdk"
 ```
 
-Expect `minos 13.0` and `sdk 27.0`. The manifest is `swift-tools-version:6.4` with `swiftSettings: [.swiftLanguageMode(.v5)]`, so Swift 6 language mode is off; migrating it is a separate job.
+Expect `minos 13.0` and `sdk` equal to the installed SDK (`27.2` when this was written), never equal to `minos`. The manifest is `swift-tools-version:6.4` with `swiftSettings: [.swiftLanguageMode(.v5)]`, so Swift 6 language mode is off; migrating it is a separate job.
 
 There are no tests. No linter. No CI. The verification loop is: build → run → visually confirm in the panel.
 
 ## Release
 
 ```bash
-# Zip only — touches nothing in git, nothing on the remote
+# Zip only: touches nothing in git, nothing on the remote
 make dist VERSION=1.0.0
 
 # Bump Info.plist, commit, tag, push, publish the GitHub release with the zip
@@ -45,7 +45,7 @@ make release VERSION=1.0.0
 
 Tags are plain semver (`v1.0.0`). `CFBundleShortVersionString` is set by `make release`, never by hand; `CFBundleVersion` comes from `git rev-list --count HEAD`. The About panel reads both keys out of the bundle, so it must never hardcode a version. Requires `gh` and a clean working tree.
 
-**Re-read the whole README before every release, not after.** This is a gate, not a nice-to-have — v1.0.0 needed three corrective passes on an already-published tag, and each one meant deleting the release and re-cutting it. Check at minimum:
+**Re-read the whole README before every release, not after.** This is a gate, not a nice-to-have: v1.0.0 needed three corrective passes on an already-published tag, and each one meant deleting the release and re-cutting it. Check at minimum:
 
 - `Resources/AppIcon.png`, the README header, still matches `Resources/AppIcon.icns`. Nothing in the build touches it, so a new icon leaves it stale. Regenerate in the same commit: `iconutil -c iconset Resources/AppIcon.icns -o /tmp/ic.iconset && cp /tmp/ic.iconset/icon_256x256.png Resources/AppIcon.png`. It renders at 256 physical pixels, so do not downscale to 128.
 - No stale app name, binary name, or repo slug anywhere: `git ls-files | grep -v AppIcon | xargs grep -ln "<old name>"`.
@@ -57,7 +57,7 @@ Verify the header against what GitHub serves, not the local file: `curl -sSL htt
 
 ## Architecture
 
-**Entry point:** `main.swift` — creates NSApplication with `.accessory` policy (no dock icon), instantiates AppDelegate via `MainActor.assumeIsolated`.
+**Entry point:** `main.swift`: creates NSApplication with `.accessory` policy (no dock icon), instantiates AppDelegate via `MainActor.assumeIsolated`.
 
 **Data flow:**
 ```
@@ -73,27 +73,32 @@ AppDelegate (NSStatusItem + MenuBarPanel + Timer)
 - `newGameIds` accumulates with `formUnion` and clears on `markAsRead()` when the panel opens
 - Badge dot is an NSView subview on the status bar button, not a SwiftUI overlay
 - All inline SVGs (sigil, gamepad, refresh) use `isTemplate = true` for system appearance adaptation
-- The app bundle is assembled by the `Makefile` (not Xcode) — copies binary + Info.plist + AppIcon.icns, then codesigns
+- The app bundle is assembled by the `Makefile` (not Xcode): copies binary + Info.plist + AppIcon.icns, then codesigns
 - The menu bar panel is `MenuBarPanel`, not `NSPopover`. `NSPopover` exposes no radius, and neither radius it draws is the one macOS uses in the menu bar: 26.25pt from a binary stamped `sdk 27.0`, 9.5pt from one stamped `sdk 14.0`. The target is Control Centre's Wi-Fi panel, measured at 17.50pt. Do not go back to `NSPopover`
-- `MenuBarPanel.cornerRadius = 18.25` is measured, not a round number, and must not be "corrected" to 17.5. `NSVisualEffectView` blends its edge and draws about 0.75pt tighter than the radius it is given: at 17.5 this panel drew 16.75, at 18.25 it draws 17.50. Circular, not `.continuous` — the Wi-Fi panel fits a circle at n=2.2. The full derivation is in the doc comments of `MenuBarPanel.swift`; read it there rather than restating it from memory
+- `MenuBarPanel.cornerRadius = 18.25` is measured, not a round number, and must not be "corrected" to 17.5. `NSVisualEffectView` blends its edge and draws about 0.75pt tighter than the radius it is given: at 17.5 this panel drew 16.75, at 18.25 it draws 17.50. Circular, not `.continuous`: the Wi-Fi panel fits a circle at n=2.2. The full derivation is in the doc comments of `MenuBarPanel.swift`; read it there rather than restating it from memory
 - No arrow and no open or close animation, on purpose: macOS 27 gives its own menu bar panels neither
 - The panel owns its dismissal. The global click monitor and the Escape monitor live in `MenuBarPanel`, replacing what `.transient` used to give. `AppDelegate` keeps none of its own, and must not add any back
 - `NSPopover` highlighted the status item for free; a panel does not. `AppDelegate` drives `button.isHighlighted` on show and clears it from `panel.onClose`
 - `ScrollView` inside the panel needs both `.scrollContentBackground(.hidden)` and its own `.background(Color.black.opacity(0.15))`. Hiding the scroll background stops an opaque slab covering the material, but it also punches through the root background, so the brandbook tint has to be restated on the scroll view
+- **The update check is deliberate, not stray network code. Do not remove it, and do not widen what it sends.** `UpdateChecker.swift` makes one `GET https://api.github.com/repos/goranimperator/imperator-freegames/releases/latest` a day, sending nothing but `Imperator-FreeGames/<version>` as the User-Agent GitHub requires. Together with the free games feed it is the app's only network traffic, and the README's Permissions table promises exactly that. Ported from `imperator-dockfolders` (the shared guide is `imperator-update-checker.md`), with two changes for this app: `ObservableObject` instead of `@Observable`, which is macOS 14 only, and no notification delegate of its own
+- The checker is on by default (`checkForUpdates`, read with `object(forKey:)` so unset means true). Its switch and **Check Now** live in the About panel, because the app has no settings window; Check Now runs even with the switch off. An hourly timer checks once 24 hours have passed since the last *successful* check (`lastUpdateCheck`), so failures retry within the hour. Anything but a 200 from GitHub, including the 404 that briefly follows overwriting a release, counts as a failed check
+- Versions compare numerically per component (`isNewer`), so `1.0.10` is newer than `1.0.9`. One notification per version (`notifiedUpdateVersion`), with the identifier prefix `update-`
+- `NotificationManager` is the only `UNUserNotificationCenterDelegate`. It routes notifications whose identifier starts with `update-` through `UpdateChecker.open`, which opens nothing but `https://github.com`, because that URL came from a network response. Game notifications open their store pages as before. Do not let `UpdateChecker` set itself as the delegate: that silently breaks clicks on game notifications
+- Updating stays manual. The app is not notarized, so a downloaded update meets Gatekeeper exactly like the first install: **Done**, then `xattr -dr com.apple.quarantine`. README and release notes say so. Sparkle was rejected for the Imperator apps on 2026-11-07 (third-party library, EdDSA key per app)
 
 ## Brandbook
 
 This app follows the **Imperator Apps BrandBook** (separate repo: `imperator-apps-brandbook`). Key rules:
 
-- **AppColors enum** — all colors reference `AppColors.brand`, `.badgeRed`, etc. Never use hardcoded color literals or bare `Color.accentColor`
-- **Forced dark mode** — `NSApp.appearance = NSAppearance(named: .darkAqua)` at launch
-- **Accent color override** — `UserDefaults.standard.set(0, forKey: "AppleAccentColor")` at launch
-- **HoverButton** pattern — opacity 0.45→1.0, `.easeInOut(duration: 0.2)`
-- **Toggle spec** — `.switch` style, `.scaleEffect(0.55)`, `.tint(AppColors.brand)`, `.labelsHidden()`. No `.frame`: the switch is 54x24pt on macOS 27, so 0.55 gives 29.7x13.2 and a frame only adds invisible padding
-- **No custom hover cursor anywhere** — every element keeps the macOS default arrow, the same as System Settings. Never push `NSCursor.pointingHand` and never add a `.cursor()` helper back
-- **Panel** — 340pt wide, `.black.opacity(0.15)` tint over the `.popover` material
-- **No blue anywhere** — all accent colors are brand red (#A01818) or badge red (#D93333)
-- **About panel copyright** — `© 1986-\(currentYear)`, computed from `Calendar`, never a hardcoded end year
+- **AppColors enum**: all colors reference `AppColors.brand`, `.badgeRed`, etc. Never use hardcoded color literals or bare `Color.accentColor`
+- **Forced dark mode**: `NSApp.appearance = NSAppearance(named: .darkAqua)` at launch
+- **Accent color override**: `UserDefaults.standard.set(0, forKey: "AppleAccentColor")` at launch
+- **HoverButton** pattern: opacity 0.45→1.0, `.easeInOut(duration: 0.2)`
+- **Toggle spec**: `.switch` style, `.scaleEffect(0.55)`, `.tint(AppColors.brand)`, `.labelsHidden()`. No `.frame`: the switch is 54x24pt on macOS 27, so 0.55 gives 29.7x13.2 and a frame only adds invisible padding
+- **No custom hover cursor anywhere**: every element keeps the macOS default arrow, the same as System Settings. Never push `NSCursor.pointingHand` and never add a `.cursor()` helper back
+- **Panel**: 340pt wide, `.black.opacity(0.15)` tint over the `.popover` material
+- **No blue anywhere**: all accent colors are brand red (#A01818) or badge red (#D93333)
+- **About panel copyright**: `© 1986-\(currentYear)`, computed from `Calendar`, never a hardcoded end year
 
 ## Git
 

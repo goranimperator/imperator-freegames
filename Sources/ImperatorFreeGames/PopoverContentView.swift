@@ -3,6 +3,7 @@ import ServiceManagement
 
 struct PopoverContentView: View {
     @EnvironmentObject var store: GameStore
+    @ObservedObject private var updates = UpdateChecker.shared
     let quitAction: () -> Void
     let refreshAction: () -> Void
 
@@ -12,6 +13,10 @@ struct PopoverContentView: View {
             Divider()
             gameListView
             Divider()
+            if let update = updates.available {
+                UpdateRow(release: update)
+                Divider()
+            }
             footerView
         }
         .frame(width: 340)
@@ -109,6 +114,34 @@ struct PopoverContentView: View {
 
             HoverButton(action: quitAction) {
                 Text("Quit")
+                    .font(.caption)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+}
+
+/// Shown above the footer while a newer release is out. The button opens the
+/// release page; installing the update stays manual.
+struct UpdateRow: View {
+    let release: UpdateChecker.Release
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(AppColors.brand)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Version \(release.version) is out")
+                    .font(.system(size: 12, weight: .medium))
+                Text("You have \(UpdateChecker.currentVersion)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            HoverButton { UpdateChecker.open(release.page) } label: {
+                Text("Download")
                     .font(.caption)
             }
         }

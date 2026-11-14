@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observeUnread()
 
         NotificationManager.shared.requestAuthorization()
+        UpdateChecker.shared.start()
 
         Task {
             await gameStore.fetch()

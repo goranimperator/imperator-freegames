@@ -16,12 +16,17 @@ Download the latest zip from [Releases](https://github.com/goranimperator/impera
 unzip, and move `Imperator FreeGames.app` to `/Applications`.
 
 The app is signed with a self-signed certificate and is not notarized, so
-Gatekeeper blocks the first launch. Right-click the app and choose **Open**, or
-clear the quarantine flag:
+Gatekeeper blocks the first launch with a dialog that offers only **Move to
+Trash** and **Done**. Choose **Done**, then clear the quarantine flag:
 
 ```bash
 xattr -dr com.apple.quarantine "/Applications/Imperator FreeGames.app"
 ```
+
+Type the command rather than pasting it from a chat window: a pasted line can
+carry curly quotes or a non-breaking space, and `xattr` then answers "No such
+file". A build fetched with `gh` or `curl` carries no quarantine flag and starts
+without the dialog.
 
 Requires macOS 13 or later, Apple silicon. Built and tested on macOS 27 only --
 older versions are expected to work but have not been verified.
@@ -39,13 +44,19 @@ Two system integrations:
 
 | Integration | What it does |
 |-------------|--------------|
-| **Notifications** | On first launch the app asks for notification permission through `UNUserNotificationCenter`. Decline it and everything still works -- you just lose the alerts and keep the badge dot. |
+| **Notifications** | On first launch the app asks for notification permission through `UNUserNotificationCenter`, for the free game alerts. The update alert uses the same grant. Decline it and everything still works: you lose the alerts, and keep the badge dot and the update row in the panel. |
 | **Open at Login** | The footer toggle calls `SMAppService.mainApp.register()`, which adds the app to Login Items in System Settings. Turning it off unregisters it. |
 
-Network access is one outbound HTTPS request every 30 minutes to
-`https://www.goranimperator.com/data/free-games.json`. Nothing is sent -- no
-identifiers, no telemetry, no account. Clicking a game opens its store page in
-your default browser.
+The app makes two kinds of outbound HTTPS request, and nothing else:
+
+| Request | How often | What it sends |
+|---------|-----------|---------------|
+| The free games feed, `https://www.goranimperator.com/data/free-games.json` | Every 30 minutes | Nothing |
+| The update check, `GET https://api.github.com/repos/goranimperator/imperator-freegames/releases/latest` | Once a day | The app's name and version as the User-Agent, which GitHub requires |
+
+No identifiers, no telemetry, no analytics, no account. The update check is on
+by default; turn it off with **Check for updates daily** in the About panel.
+Clicking a game opens its store page in your default browser.
 
 ## Use
 
@@ -64,11 +75,24 @@ The footer holds the controls:
 |---------|--------------|
 | Open at Login | Register or unregister the login item |
 | Website | Open the full free-games page in a browser |
-| About | Version, build and copyright panel |
+| About | Version, build, copyright, and the update check's switch and Check Now |
 | Quit | Terminate the app |
 
 The refresh arrow in the header forces a fetch instead of waiting for the next
 30-minute tick.
+
+### Updates
+
+Once a day the app asks GitHub for the latest release and compares it with its
+own version. When a newer one is out, a row appears above the footer and macOS
+shows one notification for that version. **Download** in the row, and a click on
+the notification, open the release page in your browser. Nothing installs by
+itself: download the zip and replace the app in `/Applications` the same way as
+the first install. The update is not notarized either, so Gatekeeper stops it
+again, and you run the `xattr` command again after each update.
+
+**Check Now** in the About panel checks immediately, even with the daily check
+switched off.
 
 State lives in
 `~/Library/Application Support/Imperator FreeGames/state.json`: the IDs already
@@ -121,7 +145,7 @@ Raising `platforms:` would fix the drawing and lock out every Mac below macOS
 minimum alone:
 
 ```bash
-swift build -c release -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.0
+swift build -c release -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker "$(xcrun --sdk macosx --show-sdk-version)"
 ```
 
 Check the result on any build:
@@ -130,7 +154,8 @@ Check the result on any build:
 otool -l "build/Imperator FreeGames.app/Contents/MacOS/ImperatorFreeGames" | awk '/LC_BUILD_VERSION/,/^$/' | grep -E "minos|sdk"
 ```
 
-It has to print `minos 13.0` and `sdk 27.0`. If `sdk` matches `minos`, the app
+It has to print `minos 13.0` and `sdk` equal to the installed SDK (`27.2` at the
+time of writing). If `sdk` matches `minos`, the app
 is drawing the old controls.
 
 ## Release
@@ -164,7 +189,8 @@ from `git rev-list --count HEAD` and is never edited by hand.
 | `Sources/ImperatorFreeGames/NotificationManager.swift` | Notification authorization, delivery, click handling |
 | `Sources/ImperatorFreeGames/PopoverContentView.swift` | SwiftUI panel layout and controls |
 | `Sources/ImperatorFreeGames/MenuBarPanel.swift` | The panel surface: system popover material, 17.5pt corner, click and Escape dismissal |
-| `Sources/ImperatorFreeGames/AboutPanel.swift` | About panel |
+| `Sources/ImperatorFreeGames/AboutPanel.swift` | About panel, with the update check's switch and Check Now |
+| `Sources/ImperatorFreeGames/UpdateChecker.swift` | Daily GitHub release check, update row state, one notification per version |
 | `Sources/ImperatorFreeGames/AppColors.swift` | Brand colours |
 | `Sources/ImperatorFreeGames/SigilIcon.swift` | Inline SVG icons rendered as template images |
 | `Resources/` | `Info.plist`, app icon, sigil source vector |
