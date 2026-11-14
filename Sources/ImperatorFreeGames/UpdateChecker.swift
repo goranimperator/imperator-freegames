@@ -13,8 +13,8 @@ import UserNotifications
 /// Installing stays manual, as the README's Install section describes: this
 /// app is not notarized, so it does not replace itself.
 ///
-/// The switch and Check Now live in the About panel, because the app has no
-/// settings window. Ported from imperator-dockfolders' UpdateChecker, with two
+/// The switch and Check Now are UpdateCheckRow, in the panel just above the
+/// footer, because the app has no settings window. Ported from imperator-dockfolders' UpdateChecker, with two
 /// changes for this app: `ObservableObject` instead of `@Observable`, which is
 /// macOS 14 only while this app still deploys to 13, and no notification
 /// delegate of its own, because NotificationManager already is the delegate
@@ -88,7 +88,7 @@ final class UpdateChecker: ObservableObject {
         Task { await check() }
     }
 
-    /// Checks now. The About panel's Check Now calls this directly, which is an
+    /// Checks now. The panel's Check Now calls this directly, which is an
     /// explicit request and so runs even with the daily check switched off.
     func check() async {
         guard status != .checking else { return }

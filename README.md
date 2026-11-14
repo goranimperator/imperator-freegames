@@ -55,7 +55,8 @@ The app makes two kinds of outbound HTTPS request, and nothing else:
 | The update check, `GET https://api.github.com/repos/goranimperator/imperator-freegames/releases/latest` | Once a day | The app's name and version as the User-Agent, which GitHub requires |
 
 No identifiers, no telemetry, no analytics, no account. The update check is on
-by default; turn it off with **Check for updates daily** in the About panel.
+by default; turn it off with **Check for updates** in the panel, just above the
+footer.
 Clicking a game opens its store page in your default browser.
 
 ## Use
@@ -75,7 +76,7 @@ The footer holds the controls:
 |---------|--------------|
 | Open at Login | Register or unregister the login item |
 | Website | Open the full free-games page in a browser |
-| About | Version, build, copyright, and the update check's switch and Check Now |
+| About | Version, build and copyright panel |
 | Quit | Terminate the app |
 
 The refresh arrow in the header forces a fetch instead of waiting for the next
@@ -91,8 +92,10 @@ itself: download the zip and replace the app in `/Applications` the same way as
 the first install. The update is not notarized either, so Gatekeeper stops it
 again, and you run the `xattr` command again after each update.
 
-**Check Now** in the About panel checks immediately, even with the daily check
-switched off.
+Two rows above the footer control the check: **Check for updates** turns the
+daily check on or off, and the row under it shows the last result, such as
+"Up to date" with the running version, next to **Check Now**, which checks
+immediately, even with the daily check switched off.
 
 State lives in
 `~/Library/Application Support/Imperator FreeGames/state.json`: the IDs already
@@ -189,7 +192,7 @@ from `git rev-list --count HEAD` and is never edited by hand.
 | `Sources/ImperatorFreeGames/NotificationManager.swift` | Notification authorization, delivery, click handling |
 | `Sources/ImperatorFreeGames/PopoverContentView.swift` | SwiftUI panel layout and controls |
 | `Sources/ImperatorFreeGames/MenuBarPanel.swift` | The panel surface: system popover material, 17.5pt corner, click and Escape dismissal |
-| `Sources/ImperatorFreeGames/AboutPanel.swift` | About panel, with the update check's switch and Check Now |
+| `Sources/ImperatorFreeGames/AboutPanel.swift` | About panel |
 | `Sources/ImperatorFreeGames/UpdateChecker.swift` | Daily GitHub release check, update row state, one notification per version |
 | `Sources/ImperatorFreeGames/AppColors.swift` | Brand colours |
 | `Sources/ImperatorFreeGames/SigilIcon.swift` | Inline SVG icons rendered as template images |

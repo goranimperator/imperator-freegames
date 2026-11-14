@@ -13,10 +13,13 @@ struct PopoverContentView: View {
             Divider()
             gameListView
             Divider()
+            UpdateCheckRow()
+                .padding(16)
             if let update = updates.available {
-                UpdateRow(release: update)
                 Divider()
+                UpdateRow(release: update)
             }
+            Divider()
             footerView
         }
         .frame(width: 340)
@@ -119,6 +122,69 @@ struct PopoverContentView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+    }
+}
+
+/// The last rows of the body, above the footer: the daily check's switch on
+/// one row, its last result and Check Now on the next, which runs even with the
+/// switch off because it is asked for. The app has no settings window, so this
+/// is where they live. Copied from imperator-hot-corners so every Imperator menu
+/// bar app shows the same two rows.
+struct UpdateCheckRow: View {
+    @ObservedObject private var updates = UpdateChecker.shared
+    @AppStorage(UpdateChecker.enabledKey) private var checkForUpdates = true
+    @State private var isHovered = false
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("Check for updates")
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                Spacer()
+                // Scaling leaves the layout frame at the full 54 pt, so a switch
+                // scaled from its centre sits 12 pt inside the row's right edge.
+                // Anchored trailing, its drawn edge lines up with Check Now's.
+                Toggle("", isOn: $checkForUpdates)
+                    .toggleStyle(.switch)
+                    .scaleEffect(0.55, anchor: .trailing)
+                    .tint(AppColors.brand)
+                    .labelsHidden()
+                    // Single-argument onChange: the two-argument form is macOS
+                    // 14 only, and this app still deploys to 13.
+                    .onChange(of: checkForUpdates) { on in
+                        if on { UpdateChecker.shared.checkIfDue() }
+                    }
+            }
+            .opacity(isHovered ? 1.0 : 0.45)
+            .animation(.easeInOut(duration: 0.2), value: isHovered)
+            .onHover { isHovered = $0 }
+
+            HStack {
+                Text(status)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer()
+                HoverButton { Task { await UpdateChecker.shared.check() } } label: {
+                    Text("Check Now")
+                        .font(.caption)
+                }
+                .disabled(updates.status == .checking)
+            }
+        }
+    }
+
+    /// The last result, with the running version.
+    private var status: String {
+        let current = UpdateChecker.currentVersion
+        switch updates.status {
+        case .idle: return "Version \(current)"
+        case .checking: return "Checking\u{2026}"
+        case .upToDate: return "Up to date, version \(current)"
+        case .failed: return "Could not reach GitHub"
+        case .available(let release): return "Version \(release.version) is available"
+        }
     }
 }
 

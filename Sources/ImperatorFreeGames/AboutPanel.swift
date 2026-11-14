@@ -62,19 +62,6 @@ final class AboutPanel {
 
 struct AboutView: View {
     @State private var isLinkHovered = false
-    @ObservedObject private var updates = UpdateChecker.shared
-    @AppStorage(UpdateChecker.enabledKey) private var checkForUpdates: Bool = true
-
-    private var updateStatus: String {
-        let current = UpdateChecker.currentVersion
-        switch updates.status {
-        case .idle: return "Version \(current)"
-        case .checking: return "Checking..."
-        case .upToDate: return "Up to date"
-        case .failed: return "Could not reach GitHub"
-        case .available(let release): return "\(release.version) is out"
-        }
-    }
 
     private var version: String {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
@@ -115,52 +102,8 @@ struct AboutView: View {
                         NSWorkspace.shared.open(url)
                     }
                 }
-
-            // The app has no settings window, so the update check's switch and
-            // Check Now live here, next to the version they compare against.
-            Divider()
-                .padding(.top, 4)
-
-            VStack(spacing: 6) {
-                HStack {
-                    Text("Check for updates daily")
-                        .font(.caption)
-                    Spacer()
-                    Toggle("", isOn: $checkForUpdates)
-                        .toggleStyle(.switch)
-                        .scaleEffect(0.55)
-                        .tint(AppColors.brand)
-                        .labelsHidden()
-                }
-                // Single-argument onChange: the two-argument form is macOS 14
-                // only, and this app still deploys to 13.
-                .onChange(of: checkForUpdates) { on in
-                    if on { UpdateChecker.shared.checkIfDue() }
-                }
-
-                HStack(spacing: 12) {
-                    Text(updateStatus)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                    Spacer()
-                    if let update = updates.available {
-                        HoverButton { UpdateChecker.open(update.page) } label: {
-                            Text("Download")
-                                .font(.caption)
-                        }
-                    }
-                    HoverButton { Task { await UpdateChecker.shared.check() } } label: {
-                        Text("Check Now")
-                            .font(.caption)
-                    }
-                    .disabled(updates.status == .checking)
-                }
-            }
         }
         .padding(24)
-        // Taller than brandbook 10's 260pt, which has no room for the update
-        // row. The panel sizes itself from the fitting height.
-        .frame(width: 300)
+        .frame(width: 300, height: 260)
     }
 }
